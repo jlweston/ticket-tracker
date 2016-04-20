@@ -1,0 +1,38 @@
+﻿body { font-family: Helvetica, Arial; margin: 0 10px 0 10px; }
+
+.folders { background-color: #bbb; list-style-type: none; padding: 0; margin: 5px; border-radius: 7px; 
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #d6d6d6), color-stop(0.4, #c0c0c0), color-stop(1,#a4a4a4)); 
+	margin: 10px 0 16px 0;
+	font-size: 0px;
+}
+.folders li:hover { background-color: #ddd; }    
+.folders li:first-child { border-left: none; border-radius: 7px 0 0 7px; }
+.folders li { font-size: 16px; font-weight: bold; display: inline-block; padding: 0.5em 1.5em; cursor: pointer;
+			color: #444; text-shadow: #f7f7f7 0 1px 1px; border-left: 1px solid #ddd; border-right: 1px solid #888; 
+}
+.folders li { *display: inline !important; } /* IE7 only */
+.folders li:last-child { display: inline; float: right; border-right: none; ; border-radius: 0 7px 7px 0; } /* Fit the entry right next to the end. */
+.folders .selected { background-color: #444 !important; color: white; text-shadow:none; border-right-color: #aaa;
+			border-left: none; box-shadow:inset 1px 2px 6px #070707;
+}    
+
+.tickets { width: 100%; table-layout:fixed; border-spacing: 0; }
+.tickets thead { background-color: #bbb; font-weight: bold; color: #444; text-shadow: #f7f7f7 0 1px 1px; }
+.tickets tbody tr:hover { cursor: pointer; background-color: #68c !important; color: White; }
+.tickets th, .tickets td { text-align:left; padding: 0.4em 0.3em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tickets th { border-left: 1px solid #ddd; border-right: 1px solid #888; padding: 0.4em 0 0.3em 0.7em; }    
+.tickets th:nth-child(1), .tickets td:nth-child(1) { width: 50px; }
+.tickets th:nth-child(2), .tickets td:nth-child(2) { width: *; }
+.tickets th:nth-child(3), .tickets td:nth-child(3) { width: 60px; }
+.tickets th:last-child { border-right: none }
+.tickets tr:nth-child(even) { background-color: #EEE; }
+.tickets tr:last-child { margin-bottom: 1.5em }
+  
+.viewTicket .ticketInfo { background-color: #dae0e8; padding: 1em 1em 0.5em 1.25em; border-radius: 1em; }
+.viewTicket .ticketInfo h1 { margin-top: 0.2em; font-size: 130%; }
+.viewTicket .ticketInfo label { color: #777; font-weight: bold; min-width: 2.75em; text-align:right; display: inline-block; }
+.viewTicket .message { padding: 0 1.25em; }
+
+.createTicket { padding: 0 10px; max-width: 500px; }
+.createTicket button#submit { margin-top: 15px; }
+.createTicket textarea { resize:none; }

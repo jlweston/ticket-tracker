@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script src="/scripts/lib/sammy-latest.min.js" type="text/javascript"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js" type="text/javascript"></script>
+	<link rel="stylesheet" href="/scripts/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="/scripts/lib/bootstrap.min.js"></script>
+	<link rel="Stylesheet" href="/tix/webticket.css" />
+</head>
+
+<body>
+	<div class="topPanel">
+		<!-- Folder navigation -->
+		<ul class="folders" data-bind="foreach: folders">
+			<li data-bind="text: $data, 
+	                   css: { selected: $data == $root.chosenFolderId() },
+	                   click: $root.goToFolder"></li>
+		</ul>
+	</div>
+
+	<!-- Tickets grid -->
+	<table class="tickets" data-bind="with: chosenFolderData">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Description</th>
+				<th>Status</th>
+			</tr>
+		</thead>
+		<tbody data-bind="foreach: tickets">
+			<tr data-bind="click: $root.goToTickets">
+				<td data-bind="text: id()"></td>
+				<td data-bind="text: title()"></td>
+				<td data-bind="text: is_active()"></td>
+			</tr>
+			<!-- /ko -->
+		</tbody>
+	</table>
+
+	<!-- Chosen ticket details -->
+	<div class="viewTicket" data-bind="with: chosenTicketData">
+		<div class="ticketInfo" data-bind="foreach: tickets">
+			<h1 data-bind="text: title()"></h1>
+			<p>
+				<label>ID</label>
+				:
+				<span data-bind="text: id()"></span>
+			</p>
+			<p>
+				<label>Detail</label>
+				:
+				<span data-bind="text: detail()"></span>
+			</p>
+			<p>
+				<label>Status</label>
+				:
+				<span data-bind="text: is_active()"></span>
+			</p>
+		</div>
+	</div>
+
+	<!-- Ticket creation -->
+	<div class="createTicket" data-bind="visible: showCreateTicket">
+		<h3>Enter ticket details</h3>
+		<form role="form" id="createTicketForm">
+
+    		<div class="form-group">
+    			<label for="title">Title:</label>
+			    <input type="title" class="form-control" name="title" placeholder="Enter title", data-bind="enable: enableForm">
+    		</div>
+
+    		<div class="form-group">
+    			<label for="details">Details:</label>
+    			<textarea type="details" class="form-control" name="details" placeholder="Enter details", rows="10" data-bind="enable: enableForm"></textarea>
+    		</div>
+
+			<label for="is_active">Status:</label>
+    		<div class="dropdown">
+				<button class="btn btn-default dropdown-toggle" type="button" name="is_active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true", data-bind="enable: enableForm">
+					Open
+				<span class="caret"></span>
+				</button>
+				<ul class="dropdown-menu" aria-labelledby="is_active">
+					<li><a>Open</a></li>
+					<li><a>Closed</a></li>
+				</ul>
+			</div>
+
+    		<button type="submit" class="btn btn-success" id="submit">Submit</button>
+
+		</form>
+	</div>
+
+<script>
+
+function Ticket(data) {
+  this.id = ko.observable(data.id);
+  this.title = ko.observable(data.title);
+  this.detail = ko.observable(data.detail);
+  this.is_active = ko.observable(data.is_active);
+}
+
+function WebticketViewModel() {
+    // Data
+    var self = this;
+    self.folders = ['Open', 'Closed', 'All', 'Create'];
+    self.chosenFolderId = ko.observable();
+    self.chosenFolderData = ko.observable();
+    self.chosenTicketData = ko.observable();
+    self.showCreateTicket = ko.observable(false);
+    self.enableForm = ko.observable(true);
+    self.titleText = ko.observable();
+    self.detailsText = ko.observable();
+    self.is_activeText = ko.observable();
+
+    // Behaviours    
+    self.goToFolder = function(folder) { 
+    	if (folder == "Create") {
+    		self.showCreateTicket(true);
+        	self.chosenFolderData(null);
+        	self.chosenFolderId(folder);
+        	self.chosenTicketData(null);
+    	}
+    	else {
+        self.chosenFolderId(folder); // Mark folder as selected
+        $.get('search.php', { folder: folder }, function(data) {
+              self.chosenFolderData({
+                tickets: data.map(function(d) { return new Ticket(d); })
+              });
+        }, "json"); // Fetch folder data and update view
+        self.chosenTicketData(null); // Stop showing a ticket
+        self.showCreateTicket(false);
+    	}
+    };
+
+    self.goToTickets = function(ticket) { 
+        self.chosenFolderId(ticket.folder); // Mark ticket as selected
+        self.chosenFolderData(null); // Stop showing a folder
+        $.get('search.php', { ticketID: ticket.id }, function(data) {
+              self.chosenTicketData({
+                tickets: data.map(function(d) { return new Ticket(d); })
+              });
+        }, "json"); // Fetch ticket data and update view
+        self.showCreateTicket(false);
+    };
+
+    // Show inbox by default
+    self.goToFolder('Open');
+
+    $("#submit").click(function() {
+
+    	var url = "submit.php"; // the script where you handle the form input.
+
+    	$.ajax({
+           type: "POST",
+           url: url,
+           data: $("#createTicketForm").serialize(), // serializes the form's elements.
+           success: function(data)
+           {
+               self.goToFolder('All'); // show response from the php script.
+           }
+        });
+
+    	return false; // avoid to execute the actual submit of the form.
+	});
+
+};
+
+// Override click for submit button
+
+
+ko.applyBindings(new WebticketViewModel());
+
+// Bootstrap dropdown menu
+$(".dropdown-menu li a").click(function(){
+  $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
+  $(this).parents(".dropdown").find('.btn').val($(this).data('value'));
+});
+
+
+
+</script>
+
+</body>
+
+</html>

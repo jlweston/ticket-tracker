@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script src="/scripts/lib/sammy-latest.min.js" type="text/javascript"></script>
+	<script src="/scripts/lib/knockout-3.4.0.js" type="text/javascript"></script>
+	<link rel="Stylesheet" href="/tix/webticket.css" />
+</head>
+
+<body class="codeRunner">
+
+	<!-- Folders -->
+	<ul class="folders" data-bind="foreach: folders">
+	    <li data-bind="text: $data, 
+	                   css: { selected: $data == $root.chosenFolderId() },
+	                   click: $root.goToFolder"></li>
+	</ul>
+
+	<!-- Tickets grid -->
+	<table class="tickets" data-bind="with: chosenFolderData">
+	    <thead><tr><th>ID</th><th>Description</th><th>Status</th></tr></thead>
+	    <tbody>
+	    <!-- ko foreach: tickets -->
+	        <tr data-bind="click: $root.goToTickets">
+	            <td data-bind="text: id"></td>
+	            <td data-bind="text: message"></td>
+	            <td data-bind="text: is_active"></td>
+	        </tr>     
+	        <!-- /ko -->
+	    </tbody>
+	</table>
+
+<!-- Chosen ticket -->
+<!-- <div class="viewTicket" data-bind="with: chosenTicketData">
+    <div class="ticketInfo">
+        <h1 data-bind="text: subject"></h1>
+        <p><label>ID2</label>: <span data-bind="text: from"></span></p>
+        <p><label>Description2</label>: <span data-bind="text: to"></span></p>
+        <p><label>Status2</label>: <span data-bind="text: date"></span></p>
+    </div>
+    <p class="message" data-bind="html: messageContent" />
+</div> -->
+
+
+<script>
+function WebticketViewModel() {
+    // Data
+    var self = this;
+    self.folders = ['All', 'Open', 'Closed'];
+    self.chosenFolderId = ko.observable();
+    self.chosenFolderData = ko.observable();
+    self.chosenTicketData = ko.observable();
+
+    // Behaviours    
+    self.goToFolder = function(folder) { 
+        self.chosenFolderId(folder); // Mark folder as selected
+        self.chosenTicketData(null); // Stop showing a ticket
+		$.get('search.php', { folder: folder }, self.chosenFolderData); // Fetch folder data and update view
+    };
+
+    self.goToTickets = function(ticket) { 
+        self.chosenFolderId(ticket.folder); // Mark ticket as selected
+        self.chosenFolderData(null); // Stop showing a folder
+		$.get('search.php', { ticketID: tickets.id }, self.chosenTicketData); // Fetch ticket data and update view
+    };
+
+    // Show inbox by default
+    self.goToFolder('All');
+};
+
+ko.applyBindings(new WebticketViewModel());
+</script>
+
+</body>
+
+</html>
+
+
